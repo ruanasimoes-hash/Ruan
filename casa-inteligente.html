@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Casa Inteligente</title>
+<style>
+:root{--bg:#f3f1ec;--panel:#fffdf8;--ink:#1d2a2a;--mute:#66736f;--line:#ddd8cc;--accent:#1f7a6d;--accent-ink:#fff;--warm:#e9a23b;--off:#c9c5b8;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121816;--panel:#1a2321;--ink:#e7efec;--mute:#93a39e;--line:#2b3834;--accent:#4cc2ae;--accent-ink:#06201b;--warm:#f0b44f;--off:#3a4743}}
+*{box-sizing:border-box;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding:24px 20px 48px;max-width:1000px;margin:0 auto}
+h1{font-size:clamp(28px,5vw,42px);letter-spacing:-.02em;line-height:1.1}
+h2{font-size:18px;margin:34px 0 14px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.top p{color:var(--mute);margin-top:6px}
+.scenes{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.sw:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.scene{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 16px}
+.scene.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:26px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.stat b{font-size:28px;display:block}.stat span{color:var(--mute);font-size:14px}
+.rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.room{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.room h3{font-size:17px;margin-bottom:10px}
+.dev{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.dev small{display:block;color:var(--mute);font-size:12px}
+.sw{width:46px;height:26px;border-radius:99px;border:0;background:var(--off);position:relative;transition:background .2s;flex:none}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+.sw[aria-pressed="true"]{background:var(--accent)}
+.sw[aria-pressed="true"]:after{left:23px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
+.temp{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.temp output{font-size:56px;font-weight:700;letter-spacing:-.03em}
+.step{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:22px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:12px}
+.bars i{flex:1;background:var(--warm);border-radius:5px 5px 0 0;min-height:4px}
+.bars i.now{background:var(--accent)}
+.lbl{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;margin-top:6px}
+.lock{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.lock:first-of-type{border-top:0}
+.pill{font-size:13px;padding:4px 12px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.pill.ok{color:var(--accent);border-color:var(--accent)}.pill.warn{color:#b3541e;border-color:#b3541e}
+.act{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 14px}
+.log{margin-top:14px;font-size:13px;color:var(--mute);min-height:20px}
+footer{margin-top:40px;color:var(--mute);font-size:12px}
+.side{position:fixed;top:0;left:0;bottom:0;width:300px;background:var(--panel);border-right:1px solid var(--line);padding:calc(20px + env(safe-area-inset-top,0px)) 18px 24px;overflow-y:auto;z-index:20;transform:translateX(-100%);transition:transform .2s}
+.side.open{transform:none}
+.side h2{margin-top:0}.side h3{font-size:15px;margin:22px 0 6px}
+.side label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+.side input[type=text],.side input[type=password]{width:100%;font:inherit;padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center}.row input{flex:1}
+.chk{display:flex!important;gap:8px;align-items:center}
+.go{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;flex:1}
+.side code{font-size:12px;word-break:break-all}.side ul{padding-left:18px;font-size:12px;color:var(--mute)}
+.side .hint{font-size:12px;color:var(--mute);margin-top:6px}
+.menuBtn{margin-bottom:14px}
+@media(min-width:1000px){.side{transform:none}body{margin-left:320px;margin-right:24px;max-width:none}.menuBtn,#closeB{display:none}}
+</style>
+</head>
+<body>
+<aside class="side" id="side" aria-label="Configurações">
+ <div class="row"><h2 style="flex:1">Configurações</h2><button class="act" id="closeB" aria-label="Fechar">✕</button></div>
+ <h3>Conexão MQTT</h3>
+ <span class="pill" id="mStat">Desconectado</span>
+ <form id="mForm" autocomplete="off">
+  <label for="mUrl">Broker (WebSocket)</label>
+  <input type="text" id="mUrl" placeholder="wss://broker.exemplo.com:8884/mqtt">
+  <label for="mCid">Client ID</label>
+  <div class="row"><input type="text" id="mCid"><button type="button" class="act" id="mGen">Gerar</button></div>
+  <label for="mUser">Usuário</label>
+  <input type="text" id="mUser" autocomplete="off">
+  <label for="mPass">Senha</label>
+  <input type="password" id="mPass" autocomplete="new-password">
+  <label for="mPre">Prefixo dos tópicos</label>
+  <input type="text" id="mPre" value="casa">
+  <label class="chk"><input type="checkbox" id="mRem"> Lembrar configuração neste navegador</label>
+  <div class="row" style="margin-top:16px"><button class="go" type="submit">Conectar</button><button class="act" type="button" id="mOff">Desconectar</button></div>
+ </form>
+ <p class="hint">O navegador só conecta via WebSocket (ws:// ou wss://), não na porta MQTT 1883. Ative o listener WebSocket no seu broker.</p>
+ <h3>Tópicos</h3>
+ <ul>
+  <li>Comando: <code>prefixo/dispositivo/set</code> (ON / OFF)</li>
+  <li>Estado: <code>prefixo/dispositivo/state</code></li>
+  <li>Ar: <code>prefixo/clima/power/set</code> e <code>prefixo/clima/temp/set</code></li>
+  <li>Entradas: <code>prefixo/porta/set</code> e <code>prefixo/portao/set</code> (OPEN / CLOSE)</li>
+  <li>Dispositivos: l1, tv, vt, tp, l2, l3, vq, l4, cf</li>
+ </ul>
+</aside>
+<div class="top">
+ <div><button class="act menuBtn" id="menuBtn">☰ Configurações</button><h1>Casa inteligente</h1><p id="hello">Tudo em ordem por aqui.</p></div>
+ <div class="scenes" role="group" aria-label="Cenas">
+  <button class="scene" data-s="manha">Bom dia</button>
+  <button class="scene" data-s="filme">Cinema</button>
+  <button class="scene" data-s="sair">Saí de casa</button>
+  <button class="scene" data-s="noite">Boa noite</button>
+ </div>
+</div>
+
+<div class="summary">
+ <div class="stat"><b id="sLights">0</b><span>luzes acesas</span></div>
+ <div class="stat"><b id="sTemp">24°C</b><span>ar-condicionado</span></div>
+ <div class="stat"><b id="sKw">0,0 kW</b><span>consumo agora (estimado)</span></div>
+ <div class="stat"><b id="sSec">Protegida</b><span>segurança</span></div>
+</div>
+
+<h2>Cômodos</h2>
+<div class="rooms" id="rooms"></div>
+
+<div class="two">
+ <div>
+  <h2>Climatização</h2>
+  <div class="box">
+   <div class="temp">
+    <div><small style="color:var(--mute)">Temperatura desejada</small><br><output id="temp">24°C</output></div>
+    <div><button class="step" id="minus" aria-label="Diminuir">−</button> <button class="step" id="plus" aria-label="Aumentar">+</button></div>
+   </div>
+   <div class="dev" style="margin-top:14px"><div>Ar ligado<small>Liga e desliga o aparelho</small></div><button class="sw" id="acSw" aria-pressed="true" aria-label="Ar-condicionado"></button></div>
+  </div>
+ </div>
+ <div>
+  <h2>Energia hoje</h2>
+  <div class="box">
+   <strong id="kwh">0,0 kWh</strong> <span style="color:var(--mute);font-size:13px">estimativa</span>
+   <div class="bars" id="bars"></div>
+   <div class="lbl"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>agora</span></div>
+  </div>
+ </div>
+</div>
+
+<h2>Segurança</h2>
+<div class="box">
+ <div class="lock"><div>Porta principal</div><span><span class="pill ok" id="doorP">Trancada</span> <button class="act" id="doorB">Abrir</button></span></div>
+ <div class="lock"><div>Portão da garagem</div><span><span class="pill ok" id="gateP">Fechado</span> <button class="act" id="gateB">Abrir</button></span></div>
+ <div class="lock"><div>Janela da sala</div><span class="pill ok">Fechada</span></div>
+ <div class="lock"><div>Sensor de movimento</div><span class="pill ok">Sem movimento</span></div>
+ <div class="log" id="log" aria-live="polite"></div>
+</div>
+
+<footer>Painel demonstrativo: os dispositivos e valores são simulados.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+var W={luz:.06,tv:.12,vent:.08,tom:.1,cafe:.8};
+var rooms=[
+ {n:"Sala",d:[["l1","Luz principal","luz",1],["tv","Televisão","tv",0],["vt","Ventilador","vent",0],["tp","Tomada inteligente","tom",1]]},
+ {n:"Quarto",d:[["l2","Luz do teto","luz",1],["l3","Abajur","luz",0],["vq","Ventilador","vent",0]]},
+ {n:"Cozinha",d:[["l4","Luz da bancada","luz",0],["cf","Cafeteira","cafe",0]]}
+];
+var st={},meta={};
+rooms.forEach(function(r){r.d.forEach(function(x){st[x[0]]=!!x[3];meta[x[0]]={t:x[2],l:x[2]==="luz"}})});
+var temp=24,ac=true,door=false,gate=false;
+var $=function(i){return document.getElementById(i)};
+var fmt=function(n){return n.toFixed(1).replace(".",",")};
+
+var wrap=$("rooms");
+rooms.forEach(function(r){
+ var c=document.createElement("div");c.className="room";
+ c.innerHTML="<h3>"+r.n+"</h3>"+r.d.map(function(x){
+  return '<div class="dev"><div>'+x[1]+'<small>'+(x[2]==="luz"?"Iluminação":"Equipamento")+'</small></div><button class="sw" data-id="'+x[0]+'" aria-pressed="'+!!x[3]+'" aria-label="'+x[1]+' – '+r.n+'"></button></div>'}).join("");
+ wrap.appendChild(c);
+});
+wrap.addEventListener("click",function(e){
+ var b=e.target.closest(".sw");if(!b)return;
+ st[b.dataset.id]=!st[b.dataset.id];P(b.dataset.id+"/set",st[b.dataset.id]?"ON":"OFF");render();
+});
+
+var hours=[.4,.3,.3,.3,.4,.7,1.1,1.0,.6,.5,.5,.7,.9,.8,.6,.6,.8,1.3,1.8,1.6,1.2,.9,.6,.4];
+var nowH=new Date().getHours();
+function load(){
+ var k=.15;
+ for(var id in st){if(st[id])k+=W[meta[id].t]}
+ if(ac)k+=1.1;
+ return k;
+}
+function render(){
+ var n=0;
+ document.querySelectorAll(".sw[data-id]").forEach(function(b){
+  var on=st[b.dataset.id];b.setAttribute("aria-pressed",on);
+  if(on&&meta[b.dataset.id].l)n++;
+ });
+ $("sLights").textContent=n;
+ $("temp").textContent=temp+"°C";
+ $("sTemp").textContent=ac?temp+"°C":"Desligado";
+ $("acSw").setAttribute("aria-pressed",ac);
+ var k=load();
+ $("sKw").textContent=fmt(k)+" kW";
+ var bars=hours.slice(0,nowH+1).map(function(v,i){return i===nowH?k:v});
+ var tot=bars.reduce(function(a,b){return a+b},0);
+ $("kwh").textContent=fmt(tot)+" kWh";
+ var mx=Math.max.apply(null,bars.concat([2]));
+ $("bars").innerHTML=bars.map(function(v,i){return '<i class="'+(i===nowH?"now":"")+'" style="height:'+(v/mx*100)+'%" title="'+i+'h: '+fmt(v)+' kW"></i>'}).join("");
+ var open=door||gate;
+ $("sSec").textContent=open?"Atenção":"Protegida";
+ $("hello").textContent=open?"Há uma entrada aberta. Confira a segurança.":(n?"Tudo em ordem por aqui.":"Todas as luzes estão apagadas.");
+}
+$("plus").onclick=function(){temp=Math.min(30,temp+1);P("clima/temp/set",""+temp);render()};
+$("minus").onclick=function(){temp=Math.max(16,temp-1);P("clima/temp/set",""+temp);render()};
+$("acSw").onclick=function(){ac=!ac;P("clima/power/set",ac?"ON":"OFF");render()};
+function lockUI(id,pid,bid,val,onT,offT,act){
+ var p=$(pid);p.textContent=val?onT:offT;p.className="pill "+(val?"warn":"ok");
+ $(bid).textContent=val?act[1]:act[0];
+}
+function sec(msg){
+ lockUI(0,"doorP","doorB",door,"Aberta","Trancada",["Abrir","Trancar"]);
+ lockUI(0,"gateP","gateB",gate,"Aberto","Fechado",["Abrir","Fechar"]);
+ $("log").textContent=msg||"";render();
+}
+$("doorB").onclick=function(){door=!door;P("porta/set",door?"OPEN":"CLOSE");sec(door?"Porta aberta às "+hm():"Porta trancada às "+hm())};
+$("gateB").onclick=function(){gate=!gate;P("portao/set",gate?"OPEN":"CLOSE");sec(gate?"Portão aberto às "+hm():"Portão fechado às "+hm())};
+function hm(){return new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
+
+var scenes={
+ manha:{on:["l4","cf","l1"],ac:true,t:23,msg:"Cena Bom dia ativada"},
+ filme:{on:["tv","l3","vt"],ac:true,t:22,msg:"Cena Cinema ativada"},
+ sair:{on:[],ac:false,t:24,msg:"Cena Saí de casa: tudo desligado, porta e portão fechados",lock:true},
+ noite:{on:["l3"],ac:true,t:22,msg:"Cena Boa noite ativada",lock:true}
+};
+document.querySelectorAll(".scene").forEach(function(b){
+ b.onclick=function(){
+  var s=scenes[b.dataset.s];
+  for(var id in st)st[id]=s.on.indexOf(id)>-1||(id==="tp"&&b.dataset.s!=="sair");
+  ac=s.ac;temp=s.t;
+  document.querySelectorAll(".scene").forEach(function(x){x.classList.toggle("on",x===b)});
+  if(s.lock){door=false;gate=false}
+  sec(s.msg);pubAll();
+ };
+});
+sec("");
+
+/* ---- MQTT ---- */
+var cli=null;
+var f={url:$("mUrl"),cid:$("mCid"),usr:$("mUser"),pw:$("mPass"),pre:$("mPre"),rem:$("mRem")};
+function rid(){return "casa-"+Math.random().toString(16).slice(2,10)}
+function mStatus(t,k){var e=$("mStat");e.textContent=t;e.className="pill "+(k||"")}
+function P(t,v){if(cli&&cli.connected)cli.publish(f.pre.value.trim()+"/"+t,v)}
+function pubAll(){
+ for(var id in st)P(id+"/set",st[id]?"ON":"OFF");
+ P("clima/power/set",ac?"ON":"OFF");P("clima/temp/set",""+temp);
+ P("porta/set",door?"OPEN":"CLOSE");P("portao/set",gate?"OPEN":"CLOSE");
+}
+(function(){
+ var c={};try{c=JSON.parse(localStorage.getItem("mqttcfg")||"{}")}catch(e){}
+ f.url.value=c.url||"";f.cid.value=c.cid||rid();f.usr.value=c.usr||"";
+ f.pre.value=c.pre||"casa";f.rem.checked=!!c.rem;if(c.rem)f.pw.value=c.pw||"";
+})();
+$("mGen").onclick=function(){f.cid.value=rid()};
+$("menuBtn").onclick=function(){$("side").classList.add("open")};
+$("closeB").onclick=function(){$("side").classList.remove("open")};
+function incoming(t,m){
+ var pre=f.pre.value.trim(),p=t.slice(pre.length+1).split("/"),v=m.toString().toUpperCase();
+ if(p[0]==="clima"&&p[2]==="state"){
+  if(p[1]==="power")ac=v==="ON";
+  if(p[1]==="temp"){var n=parseInt(v,10);if(n>=16&&n<=30)temp=n}
+ }else if(p[1]==="state"){
+  if(p[0] in st)st[p[0]]=v==="ON";
+  else if(p[0]==="porta")door=v==="OPEN";
+  else if(p[0]==="portao")gate=v==="OPEN";
+ }else return;
+ sec("Atualizado via MQTT às "+hm());
+}
+$("mForm").onsubmit=function(e){
+ e.preventDefault();
+ if(cli){cli.end(true);cli=null}
+ var url=f.url.value.trim(),cid=f.cid.value.trim(),pre=f.pre.value.trim();
+ if(typeof mqtt==="undefined"){mStatus("Biblioteca MQTT não carregou","warn");return}
+ if(!/^wss?:\/\//.test(url)){mStatus("Use ws:// ou wss://","warn");return}
+ if(!cid){mStatus("Informe o Client ID","warn");return}
+ if(!pre){mStatus("Informe o prefixo","warn");return}
+ try{localStorage.setItem("mqttcfg",JSON.stringify({url:url,cid:cid,usr:f.usr.value,pre:pre,rem:f.rem.checked,pw:f.rem.checked?f.pw.value:""}))}catch(x){}
+ var o={clientId:cid,clean:true,reconnectPeriod:5000,connectTimeout:10000};
+ if(f.usr.value)o.username=f.usr.value;
+ if(f.pw.value)o.password=f.pw.value;
+ mStatus("Conectando…","");
+ try{cli=mqtt.connect(url,o)}catch(x){mStatus("Erro: "+x.message,"warn");return}
+ cli.on("connect",function(){
+  mStatus("Conectado","ok");
+  cli.subscribe([pre+"/+/state",pre+"/clima/+/state"]);
+  $("log").textContent="MQTT conectado às "+hm();
+  $("side").classList.remove("open");
+ });
+ cli.on("reconnect",function(){mStatus("Reconectando…","")});
+ cli.on("close",function(){if(cli&&!cli.connected)mStatus("Desconectado","warn")});
+ cli.on("error",function(err){mStatus("Erro: "+(err.message||"conexão"),"warn")});
+ cli.on("message",incoming);
+};
+$("mOff").onclick=function(){if(cli){cli.end(true);cli=null}mStatus("Desconectado","")};
+</script>
+</body>
+</html>
