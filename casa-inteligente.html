@@ -7,7 +7,7 @@
 <style>
 :root{--bg:#f3f1ec;--panel:#fffdf8;--ink:#1d2a2a;--mute:#66736f;--line:#ddd8cc;--accent:#1f7a6d;--accent-ink:#fff;--warm:#e9a23b;--off:#c9c5b8;
  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121816;--panel:#1a2321;--ink:#e7efec;--mute:#93a39e;--line:#2b3834;--accent:#4cc2ae;--accent-ink:#06201b;--warm:#f0b44f;--off:#3a4743}}
+@media(prefers-color-scheme:dark){:root{--bg:#121816;--panel:#1a2321;--ink:#e7efec;--mute:#93a39e;--line:#2b3834;--accent:#4cc2ae;--accent-ink:#06201b;--warm:#f0b44f;--off:#3a4743}}
 *{box-sizing:border-box;margin:0}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding:24px 20px 48px;max-width:1000px;margin:0 auto}
@@ -17,7 +17,7 @@ h2{font-size:18px;margin:34px 0 14px}
 .top p{color:var(--mute);margin-top:6px}
 .scenes{display:flex;gap:8px;flex-wrap:wrap}
 button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,.sw:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:focus-visible,.sw:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .scene{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 16px}
 .scene.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:26px}
@@ -25,7 +25,8 @@ button:focus-visible,.sw:focus-visible{outline:3px solid var(--accent);outline-o
 .stat b{font-size:28px;display:block}.stat span{color:var(--mute);font-size:14px}
 .rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
 .room{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
-.room h3{font-size:17px;margin-bottom:10px}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.gh h3{font-size:17px}.gh small{color:var(--mute);font-size:12px;display:block}
 .dev{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .dev small{display:block;color:var(--mute);font-size:12px}
 .sw{width:46px;height:26px;border-radius:99px;border:0;background:var(--off);position:relative;transition:background .2s;flex:none}
@@ -43,54 +44,85 @@ button:focus-visible,.sw:focus-visible{outline:3px solid var(--accent);outline-o
 .lbl{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;margin-top:6px}
 .lock{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .lock:first-of-type{border-top:0}
-.pill{font-size:13px;padding:4px 12px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.pill{font-size:13px;padding:4px 12px;border-radius:99px;background:var(--bg);border:1px solid var(--line);display:inline-block}
 .pill.ok{color:var(--accent);border-color:var(--accent)}.pill.warn{color:#b3541e;border-color:#b3541e}
 .act{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 14px}
 .log{margin-top:14px;font-size:13px;color:var(--mute);min-height:20px}
 footer{margin-top:40px;color:var(--mute);font-size:12px}
-.side{position:fixed;top:0;left:0;bottom:0;width:300px;background:var(--panel);border-right:1px solid var(--line);padding:calc(20px + env(safe-area-inset-top,0px)) 18px 24px;overflow-y:auto;z-index:20;transform:translateX(-100%);transition:transform .2s}
+.side{position:fixed;top:0;left:0;bottom:0;width:320px;background:var(--panel);border-right:1px solid var(--line);padding:calc(20px + env(safe-area-inset-top,0px)) 18px 24px;overflow-y:auto;z-index:20;transform:translateX(-100%);transition:transform .2s}
 .side.open{transform:none}
-.side h2{margin-top:0}.side h3{font-size:15px;margin:22px 0 6px}
+.side h2{margin:0}
+.tabs{display:flex;gap:4px;margin:14px 0 4px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:6px 10px;font-size:13px}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tab{display:none}.tab.on{display:block}
 .side label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
-.side input[type=text],.side input[type=password]{width:100%;font:inherit;padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.side input[type=text],.side input[type=password],.side select{width:100%;font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.side input[type=color]{width:56px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 .row{display:flex;gap:8px;align-items:center}.row input{flex:1}
 .chk{display:flex!important;gap:8px;align-items:center}
 .go{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;flex:1}
-.side code{font-size:12px;word-break:break-all}.side ul{padding-left:18px;font-size:12px;color:var(--mute)}
-.side .hint{font-size:12px;color:var(--mute);margin-top:6px}
+.side code{font-size:12px;word-break:break-all}
+.hint{font-size:12px;color:var(--mute);margin-top:8px}
+.sws{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sws button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line)}
 .menuBtn{margin-bottom:14px}
-@media(min-width:1000px){.side{transform:none}body{margin-left:320px;margin-right:24px;max-width:none}.menuBtn,#closeB{display:none}}
+@media(min-width:1000px){.side{transform:none}body{margin-left:340px;margin-right:24px;max-width:none}.menuBtn,#closeB{display:none}}
 </style>
 </head>
 <body>
 <aside class="side" id="side" aria-label="Configurações">
  <div class="row"><h2 style="flex:1">Configurações</h2><button class="act" id="closeB" aria-label="Fechar">✕</button></div>
- <h3>Conexão MQTT</h3>
- <span class="pill" id="mStat">Desconectado</span>
- <form id="mForm" autocomplete="off">
-  <label for="mUrl">Broker (WebSocket)</label>
-  <input type="text" id="mUrl" placeholder="wss://broker.exemplo.com:8884/mqtt">
-  <label for="mCid">Client ID</label>
-  <div class="row"><input type="text" id="mCid"><button type="button" class="act" id="mGen">Gerar</button></div>
-  <label for="mUser">Usuário</label>
-  <input type="text" id="mUser" autocomplete="off">
-  <label for="mPass">Senha</label>
-  <input type="password" id="mPass" autocomplete="new-password">
-  <label for="mPre">Prefixo dos tópicos</label>
-  <input type="text" id="mPre" value="casa">
-  <label class="chk"><input type="checkbox" id="mRem"> Lembrar configuração neste navegador</label>
-  <div class="row" style="margin-top:16px"><button class="go" type="submit">Conectar</button><button class="act" type="button" id="mOff">Desconectar</button></div>
- </form>
- <p class="hint">O navegador só conecta via WebSocket (ws:// ou wss://), não na porta MQTT 1883. Ative o listener WebSocket no seu broker.</p>
- <h3>Tópicos</h3>
- <ul>
-  <li>Comando: <code>prefixo/dispositivo/set</code> (ON / OFF)</li>
-  <li>Estado: <code>prefixo/dispositivo/state</code></li>
-  <li>Ar: <code>prefixo/clima/power/set</code> e <code>prefixo/clima/temp/set</code></li>
-  <li>Entradas: <code>prefixo/porta/set</code> e <code>prefixo/portao/set</code> (OPEN / CLOSE)</li>
-  <li>Dispositivos: l1, tv, vt, tp, l2, l3, vq, l4, cf</li>
- </ul>
+ <div class="tabs" role="tablist">
+  <button data-t="con" class="on" role="tab">Conexão</button><button data-t="lay" role="tab">Layout</button><button data-t="top" role="tab">Tópicos</button><button data-t="grp" role="tab">Grupos</button>
+ </div>
+
+ <section class="tab on" id="t-con">
+  <span class="pill" id="mStat" style="margin-top:10px">Desconectado</span>
+  <form id="mForm" autocomplete="off">
+   <label for="mUrl">Broker (WebSocket)</label>
+   <input type="text" id="mUrl" placeholder="wss://broker.exemplo.com:8884/mqtt">
+   <label for="mCid">Client ID</label>
+   <div class="row"><input type="text" id="mCid"><button type="button" class="act" id="mGen">Gerar</button></div>
+   <label for="mUser">Usuário</label><input type="text" id="mUser" autocomplete="off">
+   <label for="mPass">Senha</label><input type="password" id="mPass" autocomplete="new-password">
+   <label class="chk"><input type="checkbox" id="mRem"> Lembrar neste navegador</label>
+   <div class="row" style="margin-top:16px"><button class="go" type="submit">Conectar</button><button class="act" type="button" id="mOff">Desconectar</button></div>
+  </form>
+  <p class="hint">Só funciona via WebSocket (ws:// ou wss://), não na porta 1883. Ative o listener WebSocket no broker.</p>
+ </section>
+
+ <section class="tab" id="t-lay">
+  <label for="cBg">Cor de fundo</label>
+  <input type="color" id="cBg">
+  <div class="sws" id="presets"></div>
+  <label for="cAc">Cor de destaque</label>
+  <input type="color" id="cAc">
+  <p class="hint">O texto e os cartões se ajustam sozinhos para ficar legíveis em fundos claros ou escuros.</p>
+  <button class="act" id="lReset" style="margin-top:16px">Restaurar padrão</button>
+ </section>
+
+ <section class="tab" id="t-top">
+  <label for="tPre">Tópico raiz</label><input type="text" id="tPre">
+  <div class="row" style="margin-top:12px">
+   <div style="flex:1"><label for="tSet" style="margin-top:0">Subtópico de comando</label><input type="text" id="tSet"></div>
+   <div style="flex:1"><label for="tSt" style="margin-top:0">Subtópico de estado</label><input type="text" id="tSt"></div>
+  </div>
+  <p class="hint">Tópico final: <code>raiz/subtópico do dispositivo/comando</code>. Exemplo: <code id="tPrev"></code></p>
+  <div id="tList"></div>
+  <button class="go" id="tApply" style="margin-top:16px;width:100%">Aplicar tópicos</button>
+  <p class="hint">Comandos: ON/OFF. Porta e portão: OPEN/CLOSE. Temperatura: número de 16 a 30.</p>
+ </section>
+
+ <section class="tab" id="t-grp">
+  <p class="hint">Renomeie os grupos e escolha em qual deles cada dispositivo aparece.</p>
+  <div id="gList"></div>
+  <label for="gNew">Novo grupo</label>
+  <div class="row"><input type="text" id="gNew" placeholder="Ex.: Área externa"><button class="act" id="gAdd">Criar</button></div>
+  <div id="gDev"></div>
+ </section>
 </aside>
+
 <div class="top">
  <div><button class="act menuBtn" id="menuBtn">☰ Configurações</button><h1>Casa inteligente</h1><p id="hello">Tudo em ordem por aqui.</p></div>
  <div class="scenes" role="group" aria-label="Cenas">
@@ -108,8 +140,8 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
  <div class="stat"><b id="sSec">Protegida</b><span>segurança</span></div>
 </div>
 
-<h2>Cômodos</h2>
-<div class="rooms" id="rooms"></div>
+<h2>Dispositivos por grupo</h2>
+<div class="rooms" id="groups"></div>
 
 <div class="two">
  <div>
@@ -140,55 +172,184 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
  <div class="lock"><div>Sensor de movimento</div><span class="pill ok">Sem movimento</span></div>
  <div class="log" id="log" aria-live="polite"></div>
 </div>
-
-<footer>Painel demonstrativo: os dispositivos e valores são simulados.</footer>
+<footer>Painel demonstrativo: os valores de energia são simulados.</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <script>
-var W={luz:.06,tv:.12,vent:.08,tom:.1,cafe:.8};
-var rooms=[
- {n:"Sala",d:[["l1","Luz principal","luz",1],["tv","Televisão","tv",0],["vt","Ventilador","vent",0],["tp","Tomada inteligente","tom",1]]},
- {n:"Quarto",d:[["l2","Luz do teto","luz",1],["l3","Abajur","luz",0],["vq","Ventilador","vent",0]]},
- {n:"Cozinha",d:[["l4","Luz da bancada","luz",0],["cf","Cafeteira","cafe",0]]}
-];
-var st={},meta={};
-rooms.forEach(function(r){r.d.forEach(function(x){st[x[0]]=!!x[3];meta[x[0]]={t:x[2],l:x[2]==="luz"}})});
-var temp=24,ac=true,door=false,gate=false;
 var $=function(i){return document.getElementById(i)};
 var fmt=function(n){return n.toFixed(1).replace(".",",")};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+var W={luz:.06,tv:.12,vent:.08,tom:.1,cafe:.8};
+var DEV=[
+ {id:"l1",name:"Luz principal",room:"Sala",type:"luz",on:1,topic:"sala/luz",group:"g1"},
+ {id:"l2",name:"Luz do teto",room:"Quarto",type:"luz",on:1,topic:"quarto/luz",group:"g1"},
+ {id:"l3",name:"Abajur",room:"Quarto",type:"luz",on:0,topic:"quarto/abajur",group:"g1"},
+ {id:"l4",name:"Luz da bancada",room:"Cozinha",type:"luz",on:0,topic:"cozinha/luz",group:"g1"},
+ {id:"vt",name:"Ventilador",room:"Sala",type:"vent",on:0,topic:"sala/ventilador",group:"g2"},
+ {id:"vq",name:"Ventilador",room:"Quarto",type:"vent",on:0,topic:"quarto/ventilador",group:"g2"},
+ {id:"tv",name:"Televisão",room:"Sala",type:"tv",on:0,topic:"sala/tv",group:"g3"},
+ {id:"tp",name:"Tomada inteligente",room:"Sala",type:"tom",on:1,topic:"sala/tomada",group:"g3"},
+ {id:"cf",name:"Cafeteira",room:"Cozinha",type:"cafe",on:0,topic:"cozinha/cafeteira",group:"g3"}
+];
+var GR=[{id:"g1",name:"Iluminação"},{id:"g2",name:"Ventilação"},{id:"g3",name:"Eletrônicos e tomadas"}];
+var T={acPower:"clima/power",acTemp:"clima/temp",door:"porta",gate:"portao"};
+var TN={acPower:"Ar: ligar/desligar",acTemp:"Ar: temperatura",door:"Porta principal",gate:"Portão da garagem"};
+var CFG={pre:"casa",set:"set",st:"state"};
+var LAY={bg:"",ac:""};
+var st={},temp=24,ac=true,door=false,gate=false,cli=null,subbed="";
+DEV.forEach(function(d){st[d.id]=!!d.on});
 
-var wrap=$("rooms");
-rooms.forEach(function(r){
- var c=document.createElement("div");c.className="room";
- c.innerHTML="<h3>"+r.n+"</h3>"+r.d.map(function(x){
-  return '<div class="dev"><div>'+x[1]+'<small>'+(x[2]==="luz"?"Iluminação":"Equipamento")+'</small></div><button class="sw" data-id="'+x[0]+'" aria-pressed="'+!!x[3]+'" aria-label="'+x[1]+' – '+r.n+'"></button></div>'}).join("");
- wrap.appendChild(c);
+function save(){try{localStorage.setItem("casaCfg",JSON.stringify({LAY:LAY,CFG:CFG,T:T,GR:GR,DEV:DEV.map(function(d){return{id:d.id,topic:d.topic,group:d.group}})}))}catch(e){}}
+(function(){try{
+ var c=JSON.parse(localStorage.getItem("casaCfg")||"{}");
+ if(c.LAY)LAY=c.LAY;if(c.CFG)CFG=c.CFG;if(c.T)for(var k in c.T)T[k]=c.T[k];
+ if(c.GR&&c.GR.length)GR=c.GR;
+ (c.DEV||[]).forEach(function(s){DEV.forEach(function(d){if(d.id===s.id){d.topic=s.topic;d.group=s.group}})});
+ DEV.forEach(function(d){if(!GR.some(function(g){return g.id===d.group}))d.group=GR[0].id});
+}catch(e){}})();
+
+/* ---------- topics ---------- */
+var base=function(){return CFG.pre.replace(/^\/+|\/+$/g,"")};
+var cmdT=function(s){return base()+"/"+s+"/"+CFG.set};
+var stT=function(s){return base()+"/"+s+"/"+CFG.st};
+function P(seg,v){if(cli&&cli.connected)cli.publish(cmdT(seg),v)}
+function pubAll(){
+ DEV.forEach(function(d){P(d.topic,st[d.id]?"ON":"OFF")});
+ P(T.acPower,ac?"ON":"OFF");P(T.acTemp,""+temp);P(T.door,door?"OPEN":"CLOSE");P(T.gate,gate?"OPEN":"CLOSE");
+}
+function incoming(t,m){
+ var v=m.toString().trim().toUpperCase(),hit=false;
+ DEV.forEach(function(d){if(t===stT(d.topic)){st[d.id]=v==="ON";hit=true}});
+ if(t===stT(T.acPower)){ac=v==="ON";hit=true}
+ if(t===stT(T.acTemp)){var n=parseInt(v,10);if(n>=16&&n<=30){temp=n;hit=true}}
+ if(t===stT(T.door)){door=v==="OPEN";hit=true}
+ if(t===stT(T.gate)){gate=v==="OPEN";hit=true}
+ if(hit)sec("Atualizado via MQTT às "+hm());
+}
+function subscribeNow(){
+ if(!cli||!cli.connected)return;
+ if(subbed)cli.unsubscribe(subbed);
+ subbed=base()+"/#";cli.subscribe(subbed);
+}
+function buildTopics(){
+ $("tPre").value=CFG.pre;$("tSet").value=CFG.set;$("tSt").value=CFG.st;prev();
+ var h="<h3 style='font-size:14px;margin:18px 0 0'>Subtópico de cada dispositivo</h3>";
+ DEV.forEach(function(d){h+='<label>'+esc(d.name)+' · '+esc(d.room)+'</label><input type="text" data-k="d:'+d.id+'" value="'+esc(d.topic)+'">'});
+ for(var k in TN)h+='<label>'+TN[k]+'</label><input type="text" data-k="'+k+'" value="'+esc(T[k])+'">';
+ $("tList").innerHTML=h;
+}
+function prev(){$("tPrev").textContent=($("tPre").value||"casa")+"/"+(DEV[0].topic)+"/"+($("tSet").value||"set")}
+$("t-top").addEventListener("input",prev);
+$("tApply").onclick=function(){
+ var cl=function(s,d){s=s.trim().replace(/^\/+|\/+$/g,"");return s||d};
+ CFG={pre:cl($("tPre").value,"casa"),set:cl($("tSet").value,"set"),st:cl($("tSt").value,"state")};
+ document.querySelectorAll("#tList input").forEach(function(i){
+  var k=i.dataset.k,v=cl(i.value,"");if(!v)return;
+  if(k.indexOf("d:")===0){DEV.forEach(function(d){if("d:"+d.id===k)d.topic=v})}else T[k]=v;
+ });
+ save();buildTopics();subscribeNow();$("log").textContent="Tópicos aplicados às "+hm();
+};
+
+/* ---------- groups ---------- */
+function buildGroups(){
+ $("gList").innerHTML=GR.map(function(g){return '<div class="row" style="margin-top:8px"><input type="text" data-gn="'+g.id+'" value="'+esc(g.name)+'" aria-label="Nome do grupo"><button class="act" data-gd="'+g.id+'" aria-label="Excluir grupo">✕</button></div>'}).join("");
+ var opts=function(sel){return GR.map(function(g){return '<option value="'+g.id+'"'+(g.id===sel?" selected":"")+'>'+esc(g.name)+'</option>'}).join("")};
+ $("gDev").innerHTML="<h3 style='font-size:14px;margin:18px 0 0'>Dispositivos</h3>"+DEV.map(function(d){return '<label for="dg-'+d.id+'">'+esc(d.name)+' · '+esc(d.room)+'</label><select id="dg-'+d.id+'" data-dg="'+d.id+'">'+opts(d.group)+'</select>'}).join("");
+}
+$("t-grp").addEventListener("change",function(e){
+ var t=e.target;
+ if(t.dataset.gn){GR.forEach(function(g){if(g.id===t.dataset.gn)g.name=t.value.trim()||g.name});save();buildGroups();renderGroups()}
+ if(t.dataset.dg){DEV.forEach(function(d){if(d.id===t.dataset.dg)d.group=t.value});save();renderGroups()}
 });
-wrap.addEventListener("click",function(e){
+$("t-grp").addEventListener("click",function(e){
+ var b=e.target.closest("[data-gd]");if(!b||GR.length<2)return;
+ var id=b.dataset.gd;GR=GR.filter(function(g){return g.id!==id});
+ DEV.forEach(function(d){if(d.group===id)d.group=GR[0].id});
+ save();buildGroups();renderGroups();
+});
+$("gAdd").onclick=function(){
+ var n=$("gNew").value.trim();if(!n)return;
+ GR.push({id:"g"+Date.now().toString(36),name:n});$("gNew").value="";
+ save();buildGroups();renderGroups();
+};
+function renderGroups(){
+ $("groups").innerHTML=GR.map(function(g){
+  var ds=DEV.filter(function(d){return d.group===g.id});
+  return '<div class="room"><div class="gh"><div><h3>'+esc(g.name)+'</h3><small class="gc" data-g="'+g.id+'"></small></div>'+(ds.length?'<button class="act" data-all="'+g.id+'">Alternar todos</button>':'')+'</div>'+
+  (ds.length?ds.map(function(d){return '<div class="dev"><div>'+esc(d.name)+'<small>'+esc(d.room)+'</small></div><button class="sw" data-id="'+d.id+'" aria-pressed="'+st[d.id]+'" aria-label="'+esc(d.name)+' – '+esc(d.room)+'"></button></div>'}).join(""):'<div class="dev"><small>Nenhum dispositivo neste grupo.</small></div>')+'</div>';
+ }).join("");
+ render();
+}
+$("groups").addEventListener("click",function(e){
+ var a=e.target.closest("[data-all]");
+ if(a){
+  var ds=DEV.filter(function(d){return d.group===a.dataset.all}),anyOff=ds.some(function(d){return !st[d.id]});
+  ds.forEach(function(d){st[d.id]=anyOff;P(d.topic,anyOff?"ON":"OFF")});render();return;
+ }
  var b=e.target.closest(".sw");if(!b)return;
- st[b.dataset.id]=!st[b.dataset.id];P(b.dataset.id+"/set",st[b.dataset.id]?"ON":"OFF");render();
+ var d=DEV.filter(function(x){return x.id===b.dataset.id})[0];
+ st[d.id]=!st[d.id];P(d.topic,st[d.id]?"ON":"OFF");render();
 });
 
+/* ---------- layout ---------- */
+var RT=["--bg","--panel","--ink","--mute","--line","--off","--accent","--accent-ink"];
+function rgb(h){h=h.replace("#","");return[0,2,4].map(function(i){return parseInt(h.substr(i,2),16)})}
+function hex(a){return"#"+a.map(function(v){return Math.round(v).toString(16).padStart(2,"0")}).join("")}
+function mix(a,b,t){var x=rgb(a),y=rgb(b);return hex(x.map(function(v,i){return v+(y[i]-v)*t}))}
+function lum(h){var c=rgb(h);return(.299*c[0]+.587*c[1]+.114*c[2])/255}
+function applyLay(){
+ var s=document.documentElement.style;RT.forEach(function(k){s.removeProperty(k)});
+ if(LAY.bg){
+  var b=LAY.bg,dk=lum(b)<.5;
+  s.setProperty("--bg",b);
+  s.setProperty("--panel",dk?mix(b,"#ffffff",.07):mix(b,"#ffffff",.55));
+  s.setProperty("--line",dk?mix(b,"#ffffff",.16):mix(b,"#000000",.12));
+  s.setProperty("--off",dk?mix(b,"#ffffff",.25):mix(b,"#000000",.2));
+  s.setProperty("--ink",dk?"#e7efec":"#1d2a2a");
+  s.setProperty("--mute",dk?"#a3b2ad":"#566360");
+ }
+ if(LAY.ac){s.setProperty("--accent",LAY.ac);s.setProperty("--accent-ink",lum(LAY.ac)>.55?"#10201d":"#ffffff")}
+}
+var cs=getComputedStyle(document.documentElement);
+function defHex(v){return cs.getPropertyValue(v).trim()||"#000000"}
+function syncPickers(){
+ $("cBg").value=LAY.bg||defHex("--bg");$("cAc").value=LAY.ac||defHex("--accent");
+}
+["#f3f1ec","#e6eef6","#e9f2e6","#f8e9e3","#1c2230","#121816","#2b2030","#0e2a38"].forEach(function(c){
+ var b=document.createElement("button");b.style.background=c;b.setAttribute("aria-label","Fundo "+c);
+ b.onclick=function(){LAY.bg=c;applyLay();syncPickers();save()};$("presets").appendChild(b);
+});
+$("cBg").oninput=function(){LAY.bg=this.value;applyLay();save()};
+$("cAc").oninput=function(){LAY.ac=this.value;applyLay();save()};
+$("lReset").onclick=function(){LAY={bg:"",ac:""};applyLay();syncPickers();save()};
+
+/* ---------- sidebar ---------- */
+document.querySelectorAll(".tabs button").forEach(function(b){
+ b.onclick=function(){
+  document.querySelectorAll(".tabs button").forEach(function(x){x.classList.toggle("on",x===b);x.setAttribute("aria-selected",x===b)});
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.id==="t-"+b.dataset.t)});
+ };
+});
+$("menuBtn").onclick=function(){$("side").classList.add("open")};
+$("closeB").onclick=function(){$("side").classList.remove("open")};
+
+/* ---------- dashboard state ---------- */
 var hours=[.4,.3,.3,.3,.4,.7,1.1,1.0,.6,.5,.5,.7,.9,.8,.6,.6,.8,1.3,1.8,1.6,1.2,.9,.6,.4];
 var nowH=new Date().getHours();
-function load(){
- var k=.15;
- for(var id in st){if(st[id])k+=W[meta[id].t]}
- if(ac)k+=1.1;
- return k;
-}
+function load(){var k=.15;DEV.forEach(function(d){if(st[d.id])k+=W[d.type]});if(ac)k+=1.1;return k}
+function hm(){return new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
 function render(){
  var n=0;
- document.querySelectorAll(".sw[data-id]").forEach(function(b){
-  var on=st[b.dataset.id];b.setAttribute("aria-pressed",on);
-  if(on&&meta[b.dataset.id].l)n++;
+ document.querySelectorAll(".sw[data-id]").forEach(function(b){b.setAttribute("aria-pressed",st[b.dataset.id])});
+ DEV.forEach(function(d){if(st[d.id]&&d.type==="luz")n++});
+ document.querySelectorAll(".gc").forEach(function(e){
+  var ds=DEV.filter(function(d){return d.group===e.dataset.g}),on=ds.filter(function(d){return st[d.id]}).length;
+  e.textContent=ds.length?on+" de "+ds.length+" ligados":"vazio";
  });
  $("sLights").textContent=n;
- $("temp").textContent=temp+"°C";
- $("sTemp").textContent=ac?temp+"°C":"Desligado";
+ $("temp").textContent=temp+"°C";$("sTemp").textContent=ac?temp+"°C":"Desligado";
  $("acSw").setAttribute("aria-pressed",ac);
- var k=load();
- $("sKw").textContent=fmt(k)+" kW";
+ var k=load();$("sKw").textContent=fmt(k)+" kW";
  var bars=hours.slice(0,nowH+1).map(function(v,i){return i===nowH?k:v});
  var tot=bars.reduce(function(a,b){return a+b},0);
  $("kwh").textContent=fmt(tot)+" kWh";
@@ -198,22 +359,16 @@ function render(){
  $("sSec").textContent=open?"Atenção":"Protegida";
  $("hello").textContent=open?"Há uma entrada aberta. Confira a segurança.":(n?"Tudo em ordem por aqui.":"Todas as luzes estão apagadas.");
 }
-$("plus").onclick=function(){temp=Math.min(30,temp+1);P("clima/temp/set",""+temp);render()};
-$("minus").onclick=function(){temp=Math.max(16,temp-1);P("clima/temp/set",""+temp);render()};
-$("acSw").onclick=function(){ac=!ac;P("clima/power/set",ac?"ON":"OFF");render()};
-function lockUI(id,pid,bid,val,onT,offT,act){
- var p=$(pid);p.textContent=val?onT:offT;p.className="pill "+(val?"warn":"ok");
- $(bid).textContent=val?act[1]:act[0];
-}
+$("plus").onclick=function(){temp=Math.min(30,temp+1);P(T.acTemp,""+temp);render()};
+$("minus").onclick=function(){temp=Math.max(16,temp-1);P(T.acTemp,""+temp);render()};
+$("acSw").onclick=function(){ac=!ac;P(T.acPower,ac?"ON":"OFF");render()};
 function sec(msg){
- lockUI(0,"doorP","doorB",door,"Aberta","Trancada",["Abrir","Trancar"]);
- lockUI(0,"gateP","gateB",gate,"Aberto","Fechado",["Abrir","Fechar"]);
+ var p=$("doorP");p.textContent=door?"Aberta":"Trancada";p.className="pill "+(door?"warn":"ok");$("doorB").textContent=door?"Trancar":"Abrir";
+ p=$("gateP");p.textContent=gate?"Aberto":"Fechado";p.className="pill "+(gate?"warn":"ok");$("gateB").textContent=gate?"Fechar":"Abrir";
  $("log").textContent=msg||"";render();
 }
-$("doorB").onclick=function(){door=!door;P("porta/set",door?"OPEN":"CLOSE");sec(door?"Porta aberta às "+hm():"Porta trancada às "+hm())};
-$("gateB").onclick=function(){gate=!gate;P("portao/set",gate?"OPEN":"CLOSE");sec(gate?"Portão aberto às "+hm():"Portão fechado às "+hm())};
-function hm(){return new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
-
+$("doorB").onclick=function(){door=!door;P(T.door,door?"OPEN":"CLOSE");sec(door?"Porta aberta às "+hm():"Porta trancada às "+hm())};
+$("gateB").onclick=function(){gate=!gate;P(T.gate,gate?"OPEN":"CLOSE");sec(gate?"Portão aberto às "+hm():"Portão fechado às "+hm())};
 var scenes={
  manha:{on:["l4","cf","l1"],ac:true,t:23,msg:"Cena Bom dia ativada"},
  filme:{on:["tv","l3","vt"],ac:true,t:22,msg:"Cena Cinema ativada"},
@@ -223,72 +378,46 @@ var scenes={
 document.querySelectorAll(".scene").forEach(function(b){
  b.onclick=function(){
   var s=scenes[b.dataset.s];
-  for(var id in st)st[id]=s.on.indexOf(id)>-1||(id==="tp"&&b.dataset.s!=="sair");
+  DEV.forEach(function(d){st[d.id]=s.on.indexOf(d.id)>-1||(d.id==="tp"&&b.dataset.s!=="sair")});
   ac=s.ac;temp=s.t;
   document.querySelectorAll(".scene").forEach(function(x){x.classList.toggle("on",x===b)});
   if(s.lock){door=false;gate=false}
   sec(s.msg);pubAll();
  };
 });
-sec("");
 
-/* ---- MQTT ---- */
-var cli=null;
-var f={url:$("mUrl"),cid:$("mCid"),usr:$("mUser"),pw:$("mPass"),pre:$("mPre"),rem:$("mRem")};
+/* ---------- MQTT ---------- */
+var f={url:$("mUrl"),cid:$("mCid"),usr:$("mUser"),pw:$("mPass"),rem:$("mRem")};
 function rid(){return "casa-"+Math.random().toString(16).slice(2,10)}
 function mStatus(t,k){var e=$("mStat");e.textContent=t;e.className="pill "+(k||"")}
-function P(t,v){if(cli&&cli.connected)cli.publish(f.pre.value.trim()+"/"+t,v)}
-function pubAll(){
- for(var id in st)P(id+"/set",st[id]?"ON":"OFF");
- P("clima/power/set",ac?"ON":"OFF");P("clima/temp/set",""+temp);
- P("porta/set",door?"OPEN":"CLOSE");P("portao/set",gate?"OPEN":"CLOSE");
-}
 (function(){
  var c={};try{c=JSON.parse(localStorage.getItem("mqttcfg")||"{}")}catch(e){}
- f.url.value=c.url||"";f.cid.value=c.cid||rid();f.usr.value=c.usr||"";
- f.pre.value=c.pre||"casa";f.rem.checked=!!c.rem;if(c.rem)f.pw.value=c.pw||"";
+ f.url.value=c.url||"";f.cid.value=c.cid||rid();f.usr.value=c.usr||"";f.rem.checked=!!c.rem;if(c.rem)f.pw.value=c.pw||"";
 })();
 $("mGen").onclick=function(){f.cid.value=rid()};
-$("menuBtn").onclick=function(){$("side").classList.add("open")};
-$("closeB").onclick=function(){$("side").classList.remove("open")};
-function incoming(t,m){
- var pre=f.pre.value.trim(),p=t.slice(pre.length+1).split("/"),v=m.toString().toUpperCase();
- if(p[0]==="clima"&&p[2]==="state"){
-  if(p[1]==="power")ac=v==="ON";
-  if(p[1]==="temp"){var n=parseInt(v,10);if(n>=16&&n<=30)temp=n}
- }else if(p[1]==="state"){
-  if(p[0] in st)st[p[0]]=v==="ON";
-  else if(p[0]==="porta")door=v==="OPEN";
-  else if(p[0]==="portao")gate=v==="OPEN";
- }else return;
- sec("Atualizado via MQTT às "+hm());
-}
 $("mForm").onsubmit=function(e){
  e.preventDefault();
  if(cli){cli.end(true);cli=null}
- var url=f.url.value.trim(),cid=f.cid.value.trim(),pre=f.pre.value.trim();
+ var url=f.url.value.trim(),cid=f.cid.value.trim();
  if(typeof mqtt==="undefined"){mStatus("Biblioteca MQTT não carregou","warn");return}
  if(!/^wss?:\/\//.test(url)){mStatus("Use ws:// ou wss://","warn");return}
  if(!cid){mStatus("Informe o Client ID","warn");return}
- if(!pre){mStatus("Informe o prefixo","warn");return}
- try{localStorage.setItem("mqttcfg",JSON.stringify({url:url,cid:cid,usr:f.usr.value,pre:pre,rem:f.rem.checked,pw:f.rem.checked?f.pw.value:""}))}catch(x){}
+ try{localStorage.setItem("mqttcfg",JSON.stringify({url:url,cid:cid,usr:f.usr.value,rem:f.rem.checked,pw:f.rem.checked?f.pw.value:""}))}catch(x){}
  var o={clientId:cid,clean:true,reconnectPeriod:5000,connectTimeout:10000};
  if(f.usr.value)o.username=f.usr.value;
  if(f.pw.value)o.password=f.pw.value;
- mStatus("Conectando…","");
+ mStatus("Conectando…","");subbed="";
  try{cli=mqtt.connect(url,o)}catch(x){mStatus("Erro: "+x.message,"warn");return}
- cli.on("connect",function(){
-  mStatus("Conectado","ok");
-  cli.subscribe([pre+"/+/state",pre+"/clima/+/state"]);
-  $("log").textContent="MQTT conectado às "+hm();
-  $("side").classList.remove("open");
- });
+ cli.on("connect",function(){mStatus("Conectado","ok");subbed="";subscribeNow();$("log").textContent="MQTT conectado às "+hm();$("side").classList.remove("open")});
  cli.on("reconnect",function(){mStatus("Reconectando…","")});
  cli.on("close",function(){if(cli&&!cli.connected)mStatus("Desconectado","warn")});
  cli.on("error",function(err){mStatus("Erro: "+(err.message||"conexão"),"warn")});
  cli.on("message",incoming);
 };
-$("mOff").onclick=function(){if(cli){cli.end(true);cli=null}mStatus("Desconectado","")};
+$("mOff").onclick=function(){if(cli){cli.end(true);cli=null}subbed="";mStatus("Desconectado","")};
+
+/* ---------- init ---------- */
+applyLay();syncPickers();buildTopics();buildGroups();renderGroups();sec("");
 </script>
 </body>
 </html>
