@@ -93,20 +93,32 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
 .tg .hint{padding:0 14px 12px}
 .apply{position:sticky;bottom:0;background:var(--panel);padding:12px 0 0;margin-top:14px;border-top:1px solid var(--line)}
 @media(min-width:1000px){body{margin-left:364px}.bar .menuBtn{display:none}}
+#glow{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.tabs{grid-template-columns:repeat(5,1fr)}
+.tabs button{font-size:10.5px;padding:8px 0}
+.gp{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.gp button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line)}
+input[type=range]{width:100%;accent-color:var(--accent)}
 </style>
 </head>
 <body>
+<div id="glow" aria-hidden="true"></div>
 <aside class="side" id="side" aria-label="Configurações">
  <div class="row"><h2 style="flex:1">Configurações</h2><button class="act" id="closeB" aria-label="Fechar">✕</button></div>
  <div class="tabs" role="tablist">
-  <button data-t="con" class="on" role="tab"><i>🔌</i>Conexão</button><button data-t="lay" role="tab"><i>🎨</i>Layout</button><button data-t="top" role="tab"><i>🌳</i>Tópicos</button><button data-t="grp" role="tab"><i>🗂️</i>Grupos</button>
+  <button data-t="con" class="on" role="tab"><i>🔌</i>Conexão</button><button data-t="lay" role="tab"><i>🎨</i>Layout</button><button data-t="top" role="tab"><i>🌳</i>Tópicos</button><button data-t="grp" role="tab"><i>🗂️</i>Grupos</button><button data-t="acc" role="tab"><i>🚪</i>Portas</button>
  </div>
 
  <section class="tab on" id="t-con">
   <span class="pill" id="mStat" style="margin-top:10px">Desconectado</span>
   <form id="mForm" autocomplete="off">
-   <label for="mUrl">Broker (WebSocket)</label>
-   <input type="text" id="mUrl" placeholder="wss://broker.exemplo.com:8884/mqtt">
+   <label for="mHost">Servidor (host)</label>
+   <input type="text" id="mHost" placeholder="broker.exemplo.com">
+   <div class="row">
+    <div style="flex:1"><label for="mPort">Porta</label><input type="text" id="mPort" inputmode="numeric" placeholder="8884"></div>
+    <div style="flex:1"><label for="mPath">Caminho</label><input type="text" id="mPath" placeholder="/mqtt"></div>
+   </div>
+   <label class="chk"><input type="checkbox" id="mSsl" checked> Conexão segura (wss)</label>
    <label for="mCid">Client ID</label>
    <div class="row"><input type="text" id="mCid"><button type="button" class="act" id="mGen">Gerar</button></div>
    <label for="mUser">Usuário</label><input type="text" id="mUser" autocomplete="off">
@@ -114,7 +126,7 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
    <label class="chk"><input type="checkbox" id="mRem"> Lembrar neste navegador</label>
    <div class="row" style="margin-top:16px"><button class="go" type="submit">Conectar</button><button class="act" type="button" id="mOff">Desconectar</button></div>
   </form>
-  <p class="hint">Só funciona via WebSocket (ws:// ou wss://), não na porta 1883. Ative o listener WebSocket no broker.</p>
+  <p class="hint">Use a porta WebSocket do broker, não a 1883. Exemplos comuns: 8083/8084 (EMQX), 9001 (Mosquitto) e 8884 (HiveMQ/Mosquitto com TLS).</p>
  </section>
 
  <section class="tab" id="t-lay">
@@ -124,6 +136,10 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
   <label for="cAc">Cor de destaque</label>
   <input type="color" id="cAc">
   <p class="hint">O texto e os cartões se ajustam sozinhos para ficar legíveis em fundos claros ou escuros.</p>
+  <label class="chk" style="margin-top:18px"><input type="checkbox" id="lOn"> Luzes de fundo</label>
+  <div class="gp" id="gPresets"></div>
+  <label for="lCol">Cor da luz</label><input type="color" id="lCol">
+  <label for="lInt">Intensidade</label><input type="range" id="lInt" min="8" max="60" value="30">
   <button class="act" id="lReset" style="margin-top:16px">Restaurar padrão</button>
  </section>
 
@@ -147,6 +163,15 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
   <label for="gNew">Novo grupo</label>
   <div class="row"><input type="text" id="gNew" placeholder="Ex.: Área externa"><button class="act" id="gAdd">Criar</button></div>
   <div id="gDev"></div>
+ </section>
+<section class="tab" id="t-acc">
+  <p class="hint">Cadastre portas, portões e janelas. Cada um aparece em Segurança e tem o seu tópico MQTT (OPEN/CLOSE).</p>
+  <div id="aList"></div>
+  <div class="card">
+   <label for="aNew">Nova porta</label><input type="text" id="aNew" placeholder="Ex.: Porta dos fundos">
+   <label for="aKind">Tipo</label><select id="aKind"><option>porta</option><option>portão</option><option>janela</option></select>
+   <button class="go" id="aAdd" style="width:100%;margin-top:12px">Adicionar</button>
+  </div>
  </section>
 </aside>
 
@@ -197,8 +222,7 @@ footer{margin-top:40px;color:var(--mute);font-size:12px}
 
 <h2>Segurança</h2>
 <div class="box">
- <div class="lock"><div>Porta principal</div><span><span class="pill ok" id="doorP">Trancada</span> <button class="act" id="doorB">Abrir</button></span></div>
- <div class="lock"><div>Portão da garagem</div><span><span class="pill ok" id="gateP">Fechado</span> <button class="act" id="gateB">Abrir</button></span></div>
+ <div id="acc"></div>
  <div class="lock"><div>Janela da sala</div><span class="pill ok">Fechada</span></div>
  <div class="lock"><div>Sensor de movimento</div><span class="pill ok">Sem movimento</span></div>
  <div class="log" id="log" aria-live="polite"></div>
@@ -223,18 +247,20 @@ var DEV=[
  {id:"cf",name:"Cafeteira",room:"Cozinha",type:"cafe",on:0,topic:"cozinha/cafeteira",group:"g3"}
 ];
 var GR=[{id:"g1",name:"Iluminação"},{id:"g2",name:"Ventilação"},{id:"g3",name:"Eletrônicos e tomadas"}];
-var T={acPower:"clima/power",acTemp:"clima/temp",door:"porta",gate:"portao"};
-var TN={acPower:"Ar: ligar/desligar",acTemp:"Ar: temperatura",door:"Porta principal",gate:"Portão da garagem"};
+var T={acPower:"clima/power",acTemp:"clima/temp"};
+var ACC=[{id:"a1",name:"Porta principal",kind:"porta",topic:"porta",open:false},{id:"a2",name:"Portão da garagem",kind:"portão",topic:"portao",open:false},{id:"a3",name:"Janela da sala",kind:"janela",topic:"janela/sala",open:false}];
+var TN={acPower:"Ar: ligar/desligar",acTemp:"Ar: temperatura"};
 var CFG={pre:"casa",set:"set",st:"state"};
 var LAY={bg:"",ac:""};
-var st={},temp=24,ac=true,door=false,gate=false,cli=null,subbed="";
+var st={},temp=24,ac=true,cli=null,subbed="";
 DEV.forEach(function(d){st[d.id]=!!d.on});
 
-function save(){try{localStorage.setItem("casaCfg",JSON.stringify({LAY:LAY,CFG:CFG,T:T,GR:GR,DEV:DEV.map(function(d){return{id:d.id,topic:d.topic,group:d.group}})}))}catch(e){}}
+function save(){try{localStorage.setItem("casaCfg",JSON.stringify({LAY:LAY,CFG:CFG,T:T,GR:GR,ACC:ACC.map(function(a){return{id:a.id,name:a.name,kind:a.kind,topic:a.topic}}),DEV:DEV.map(function(d){return{id:d.id,topic:d.topic,group:d.group}})}))}catch(e){}}
 (function(){try{
  var c=JSON.parse(localStorage.getItem("casaCfg")||"{}");
  if(c.LAY)LAY=c.LAY;if(c.CFG)CFG=c.CFG;if(c.T)for(var k in c.T)T[k]=c.T[k];
  if(c.GR&&c.GR.length)GR=c.GR;
+ if(Array.isArray(c.ACC))ACC=c.ACC.map(function(a){a.open=false;return a});
  (c.DEV||[]).forEach(function(s){DEV.forEach(function(d){if(d.id===s.id){d.topic=s.topic;d.group=s.group}})});
  DEV.forEach(function(d){if(!GR.some(function(g){return g.id===d.group}))d.group=GR[0].id});
 }catch(e){}})();
@@ -246,15 +272,14 @@ var stT=function(s){return base()+"/"+s+"/"+CFG.st};
 function P(seg,v){if(cli&&cli.connected)cli.publish(cmdT(seg),v)}
 function pubAll(){
  DEV.forEach(function(d){P(d.topic,st[d.id]?"ON":"OFF")});
- P(T.acPower,ac?"ON":"OFF");P(T.acTemp,""+temp);P(T.door,door?"OPEN":"CLOSE");P(T.gate,gate?"OPEN":"CLOSE");
+ P(T.acPower,ac?"ON":"OFF");P(T.acTemp,""+temp);ACC.forEach(function(a){P(a.topic,a.open?"OPEN":"CLOSE")});
 }
 function incoming(t,m){
  var v=m.toString().trim().toUpperCase(),hit=false;
  DEV.forEach(function(d){if(t===stT(d.topic)){st[d.id]=v==="ON";hit=true}});
  if(t===stT(T.acPower)){ac=v==="ON";hit=true}
  if(t===stT(T.acTemp)){var n=parseInt(v,10);if(n>=16&&n<=30){temp=n;hit=true}}
- if(t===stT(T.door)){door=v==="OPEN";hit=true}
- if(t===stT(T.gate)){gate=v==="OPEN";hit=true}
+ ACC.forEach(function(a){if(t===stT(a.topic)){a.open=v==="OPEN";hit=true}});
  if(hit)sec("Atualizado via MQTT às "+hm());
 }
 function subscribeNow(){
@@ -269,7 +294,8 @@ function buildTopics(){
   var ds=DEV.filter(function(d){return d.group===g.id});
   return '<details class="tg" open><summary><span>'+esc(g.name)+'</span><em>'+ds.length+'</em></summary>'+(ds.map(function(d){return row(d.name+" · "+d.room,"d:"+d.id,d.topic)}).join("")||'<p class="hint">Grupo vazio.</p>')+'</details>';
  }).join("");
- h+='<details class="tg" open><summary><span>Clima e acessos</span><em>4</em></summary>'+Object.keys(TN).map(function(k){return row(TN[k],k,T[k])}).join("")+'</details>';
+ h+='<details class="tg" open><summary><span>Clima</span><em>2</em></summary>'+Object.keys(TN).map(function(k){return row(TN[k],k,T[k])}).join("")+'</details>';
+ h+='<details class="tg" open><summary><span>Portas e acessos</span><em>'+ACC.length+'</em></summary>'+(ACC.map(function(a){return row(a.name+" · "+a.kind,"a:"+a.id,a.topic)}).join("")||'<p class="hint">Nenhuma porta cadastrada.</p>')+'</details>';
  $("tList").innerHTML=h;prev();
 }
 function prev(){
@@ -291,7 +317,7 @@ $("tApply").onclick=function(){
  CFG={pre:cl($("tPre").value,"casa"),set:cl($("tSet").value,"set"),st:cl($("tSt").value,"state")};
  document.querySelectorAll("#tList input").forEach(function(i){
   var k=i.dataset.k,v=cl(i.value,"");if(!v)return;
-  if(k.indexOf("d:")===0){DEV.forEach(function(d){if("d:"+d.id===k)d.topic=v})}else T[k]=v;
+  if(k.indexOf("d:")===0){DEV.forEach(function(d){if("d:"+d.id===k)d.topic=v})}else if(k.indexOf("a:")===0){ACC.forEach(function(a){if("a:"+a.id===k)a.topic=v})}else T[k]=v;
  });
  save();buildTopics();subscribeNow();$("log").textContent="Tópicos aplicados às "+hm();
 };
@@ -355,18 +381,33 @@ function applyLay(){
   s.setProperty("--mute",dk?"#a3b2ad":"#566360");
  }
  if(LAY.ac){s.setProperty("--accent",LAY.ac);s.setProperty("--accent-ink",lum(LAY.ac)>.55?"#10201d":"#ffffff")}
+ var g=LAY.gl||{},el=$("glow");
+ if(g.on){
+  var c=g.c||"#ffb347",a=(g.i||30)/100;
+  el.style.background="radial-gradient(620px 420px at 12% 8%,"+rgba(c,a)+",transparent 70%),radial-gradient(520px 420px at 92% 22%,"+rgba(mix(c,"#4cc2ae",.6),a*.8)+",transparent 70%),radial-gradient(720px 520px at 55% 105%,"+rgba(mix(c,"#ff6fae",.5),a*.7)+",transparent 70%)";
+ }else el.style.background="none";
 }
+function rgba(h,a){var c=rgb(h);return"rgba("+c.map(Math.round).join(",")+","+a+")"}
+function gl(){return LAY.gl||(LAY.gl={on:false,c:"#ffb347",i:30})}
 var cs=getComputedStyle(document.documentElement);
 function defHex(v){return cs.getPropertyValue(v).trim()||"#000000"}
 function syncPickers(){
  $("cBg").value=LAY.bg||defHex("--bg");$("cAc").value=LAY.ac||defHex("--accent");
+ var g=gl();$("lOn").checked=!!g.on;$("lCol").value=g.c||"#ffb347";$("lInt").value=g.i||30;
 }
-["#f3f1ec","#e6eef6","#e9f2e6","#f8e9e3","#1c2230","#121816","#2b2030","#0e2a38"].forEach(function(c){
+["#f3f1ec","#ffffff","#e6eef6","#e9f2e6","#f8e9e3","#f6efd8","#efe6f5","#dff1f0","#1c2230","#121816","#2b2030","#0e2a38","#1d1a14","#10131a","#1f2a1d","#000000"].forEach(function(c){
  var b=document.createElement("button");b.style.background=c;b.setAttribute("aria-label","Fundo "+c);
  b.onclick=function(){LAY.bg=c;applyLay();syncPickers();save()};$("presets").appendChild(b);
 });
 $("cBg").oninput=function(){LAY.bg=this.value;applyLay();save()};
 $("cAc").oninput=function(){LAY.ac=this.value;applyLay();save()};
+$("lOn").onchange=function(){gl().on=this.checked;applyLay();save()};
+$("lCol").oninput=function(){var g=gl();g.c=this.value;g.on=true;$("lOn").checked=true;applyLay();save()};
+$("lInt").oninput=function(){var g=gl();g.i=+this.value;g.on=true;$("lOn").checked=true;applyLay();save()};
+["#ffb347","#4cc2ff","#ff6fae","#7be07b","#9b7bff","#ffe066"].forEach(function(c){
+ var b=document.createElement("button");b.style.background=c;b.setAttribute("aria-label","Luz "+c);
+ b.onclick=function(){var g=gl();g.c=c;g.on=true;applyLay();syncPickers();save()};$("gPresets").appendChild(b);
+});
 $("lReset").onclick=function(){LAY={bg:"",ac:""};applyLay();syncPickers();save()};
 
 /* ---------- sidebar ---------- */
@@ -402,20 +443,50 @@ function render(){
  $("kwh").textContent=fmt(tot)+" kWh";
  var mx=Math.max.apply(null,bars.concat([2]));
  $("bars").innerHTML=bars.map(function(v,i){return '<i class="'+(i===nowH?"now":"")+'" style="height:'+(v/mx*100)+'%" title="'+i+'h: '+fmt(v)+' kW"></i>'}).join("");
- var open=door||gate;
+ var open=ACC.some(function(a){return a.open&&a.kind!=="janela"||a.open});
  $("sSec").textContent=open?"Atenção":"Protegida";
  $("hello").textContent=open?"Há uma entrada aberta. Confira a segurança.":(n?"Tudo em ordem por aqui.":"Todas as luzes estão apagadas.");
 }
 $("plus").onclick=function(){temp=Math.min(30,temp+1);P(T.acTemp,""+temp);render()};
 $("minus").onclick=function(){temp=Math.max(16,temp-1);P(T.acTemp,""+temp);render()};
 $("acSw").onclick=function(){ac=!ac;P(T.acPower,ac?"ON":"OFF");render()};
-function sec(msg){
- var p=$("doorP");p.textContent=door?"Aberta":"Trancada";p.className="pill "+(door?"warn":"ok");$("doorB").textContent=door?"Trancar":"Abrir";
- p=$("gateP");p.textContent=gate?"Aberto":"Fechado";p.className="pill "+(gate?"warn":"ok");$("gateB").textContent=gate?"Fechar":"Abrir";
- $("log").textContent=msg||"";render();
+function accL(a){
+ if(a.kind==="portão")return a.open?["Aberto","Fechar"]:["Fechado","Abrir"];
+ if(a.kind==="janela")return a.open?["Aberta","Fechar"]:["Fechada","Abrir"];
+ return a.open?["Aberta","Trancar"]:["Trancada","Abrir"];
 }
-$("doorB").onclick=function(){door=!door;P(T.door,door?"OPEN":"CLOSE");sec(door?"Porta aberta às "+hm():"Porta trancada às "+hm())};
-$("gateB").onclick=function(){gate=!gate;P(T.gate,gate?"OPEN":"CLOSE");sec(gate?"Portão aberto às "+hm():"Portão fechado às "+hm())};
+function renderAcc(){
+ $("acc").innerHTML=ACC.length?ACC.map(function(a){var l=accL(a);return '<div class="lock"><div>'+esc(a.name)+'<small style="display:block;color:var(--mute);font-size:12px">'+esc(a.kind)+'</small></div><span><span class="pill '+(a.open?"warn":"ok")+'">'+l[0]+'</span> <button class="act" data-acc="'+a.id+'">'+l[1]+'</button></span></div>'}).join(""):'<div class="lock"><small style="color:var(--mute)">Nenhuma porta cadastrada. Adicione em Configurações › Portas.</small></div>';
+}
+function sec(msg){renderAcc();$("log").textContent=msg||"";render()}
+$("acc").addEventListener("click",function(e){
+ var b=e.target.closest("[data-acc]");if(!b)return;
+ var a=ACC.filter(function(x){return x.id===b.dataset.acc})[0];
+ a.open=!a.open;P(a.topic,a.open?"OPEN":"CLOSE");
+ sec(a.name+": "+accL(a)[0].toLowerCase()+" às "+hm());
+});
+function buildAcc(){
+ var kinds=["porta","portão","janela"];
+ $("aList").innerHTML=ACC.map(function(a){return '<div class="card" style="padding-top:10px"><label>Nome</label><input type="text" data-an="'+a.id+'" value="'+esc(a.name)+'"><div class="row"><div style="flex:1"><label>Tipo</label><select data-ak="'+a.id+'">'+kinds.map(function(k){return '<option'+(k===a.kind?" selected":"")+'>'+k+'</option>'}).join("")+'</select></div><div style="flex:1"><label>Tópico</label><input type="text" data-at="'+a.id+'" value="'+esc(a.topic)+'"></div></div><button class="act" data-ad="'+a.id+'" style="margin-top:10px">Remover</button></div>'}).join("")||'<p class="hint">Nenhuma porta cadastrada.</p>';
+}
+$("t-acc").addEventListener("change",function(e){
+ var t=e.target,id=t.dataset.an||t.dataset.ak||t.dataset.at;if(!id)return;
+ var a=ACC.filter(function(x){return x.id===id})[0];if(!a)return;
+ if(t.dataset.an)a.name=t.value.trim()||a.name;
+ if(t.dataset.ak)a.kind=t.value;
+ if(t.dataset.at)a.topic=t.value.trim().replace(/^\/+|\/+$/g,"")||a.topic;
+ save();buildAcc();renderAcc();buildTopics();
+});
+$("t-acc").addEventListener("click",function(e){
+ var b=e.target.closest("[data-ad]");if(!b)return;
+ ACC=ACC.filter(function(x){return x.id!==b.dataset.ad});save();buildAcc();sec("");buildTopics();
+});
+$("aAdd").onclick=function(){
+ var n=$("aNew").value.trim();if(!n)return;
+ var slug=n.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"acesso";
+ ACC.push({id:"a"+Date.now().toString(36),name:n,kind:$("aKind").value,topic:"acesso/"+slug,open:false});
+ $("aNew").value="";save();buildAcc();sec("");buildTopics();
+};
 var scenes={
  manha:{on:["l4","cf","l1"],ac:true,t:23,msg:"Cena Bom dia ativada"},
  filme:{on:["tv","l3","vt"],ac:true,t:22,msg:"Cena Cinema ativada"},
@@ -428,28 +499,33 @@ document.querySelectorAll(".scene").forEach(function(b){
   DEV.forEach(function(d){st[d.id]=s.on.indexOf(d.id)>-1||(d.id==="tp"&&b.dataset.s!=="sair")});
   ac=s.ac;temp=s.t;
   document.querySelectorAll(".scene").forEach(function(x){x.classList.toggle("on",x===b)});
-  if(s.lock){door=false;gate=false}
+  if(s.lock)ACC.forEach(function(a){a.open=false});
   sec(s.msg);pubAll();
  };
 });
 
 /* ---------- MQTT ---------- */
-var f={url:$("mUrl"),cid:$("mCid"),usr:$("mUser"),pw:$("mPass"),rem:$("mRem")};
+var f={host:$("mHost"),port:$("mPort"),path:$("mPath"),ssl:$("mSsl"),cid:$("mCid"),usr:$("mUser"),pw:$("mPass"),rem:$("mRem")};
 function rid(){return "casa-"+Math.random().toString(16).slice(2,10)}
 function mStatus(t,k){var e=$("mStat");e.textContent=t;e.className="pill "+(k||"")}
 (function(){
  var c={};try{c=JSON.parse(localStorage.getItem("mqttcfg")||"{}")}catch(e){}
- f.url.value=c.url||"";f.cid.value=c.cid||rid();f.usr.value=c.usr||"";f.rem.checked=!!c.rem;if(c.rem)f.pw.value=c.pw||"";
+ if(c.url){try{var u=new URL(c.url);f.host.value=u.hostname;f.port.value=u.port;f.path.value=u.pathname;f.ssl.checked=u.protocol==="wss:"}catch(e){}}
+ else{f.host.value=c.host||"";f.port.value=c.port||"8884";f.path.value=c.path||"/mqtt";f.ssl.checked=c.ssl!==false}
+ f.cid.value=c.cid||rid();f.usr.value=c.usr||"";f.rem.checked=!!c.rem;if(c.rem)f.pw.value=c.pw||"";
 })();
 $("mGen").onclick=function(){f.cid.value=rid()};
 $("mForm").onsubmit=function(e){
  e.preventDefault();
  if(cli){cli.end(true);cli=null}
- var url=f.url.value.trim(),cid=f.cid.value.trim();
+ var host=f.host.value.trim().replace(/^[a-z]+:\/\//i,"").replace(/\/.*$/,""),port=f.port.value.trim(),path=f.path.value.trim()||"/mqtt",cid=f.cid.value.trim();
+ if(path.charAt(0)!=="/")path="/"+path;
+ var url=(f.ssl.checked?"wss":"ws")+"://"+host+(port?":"+port:"")+path;
  if(typeof mqtt==="undefined"){mStatus("Biblioteca MQTT não carregou","warn");return}
- if(!/^wss?:\/\//.test(url)){mStatus("Use ws:// ou wss://","warn");return}
+ if(!host){mStatus("Informe o servidor","warn");return}
+ if(port&&!(/^\d+$/.test(port)&&+port>0&&+port<65536)){mStatus("Porta inválida (1 a 65535)","warn");return}
  if(!cid){mStatus("Informe o Client ID","warn");return}
- try{localStorage.setItem("mqttcfg",JSON.stringify({url:url,cid:cid,usr:f.usr.value,rem:f.rem.checked,pw:f.rem.checked?f.pw.value:""}))}catch(x){}
+ try{localStorage.setItem("mqttcfg",JSON.stringify({host:host,port:port,path:path,ssl:f.ssl.checked,cid:cid,usr:f.usr.value,rem:f.rem.checked,pw:f.rem.checked?f.pw.value:""}))}catch(x){}
  var o={clientId:cid,clean:true,reconnectPeriod:5000,connectTimeout:10000};
  if(f.usr.value)o.username=f.usr.value;
  if(f.pw.value)o.password=f.pw.value;
@@ -467,7 +543,7 @@ $("mOff").onclick=function(){if(cli){cli.end(true);cli=null}subbed="";mStatus("D
 var fD=new Intl.DateTimeFormat("pt-BR",{timeZone:TZ,weekday:"short",day:"2-digit",month:"short"}),fT=new Intl.DateTimeFormat("pt-BR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 function tick(){var n=new Date();$("clkT").textContent=fT.format(n);$("clkD").textContent=fD.format(n)}
 tick();setInterval(tick,1000);
-applyLay();syncPickers();buildTopics();buildGroups();renderGroups();sec("");
+applyLay();syncPickers();buildTopics();buildAcc();buildGroups();renderGroups();sec("");
 </script>
 </body>
 </html>
